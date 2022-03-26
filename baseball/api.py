@@ -1,6 +1,4 @@
 import requests
-import datetime
-
 from urllib.parse import urlencode, quote_plus
 
 
@@ -78,11 +76,11 @@ class StatsData:
     def season_hitting_stats(
         self,
         player_id: str,
+        season: str,
         game_type: str = "R",
-        season: str = str(datetime.datetime.now().year - 1),
         pro: bool = True,
-        ) -> list:
-        """https://appac.github.io/mlb-data-api-docs/#stats-data-season-hitting-stats-get
+        ) -> dict:
+        """Retrieve a players hitting stats for a given season.
         https://appac.github.io/mlb-data-api-docs/#stats-data-season-hitting-stats-get
         """
         params = {}
@@ -94,8 +92,72 @@ class StatsData:
         else:
             params["league_list_id"] = "'milb'"
             print("Need to verify if sport_code='milb' is correct parameter for minor leagues")
-        
+
         encoded_params = urlencode(params, quote_via=quote_plus)
         endpoint = f"/json/named.sport_hitting_tm.bam?{encoded_params}"
         r = requests.get(self._host + endpoint)
-        return r.json()["sport_hitting_tm"]["queryResults"]
+        return r.json()["sport_hitting_tm"]["queryResults"].get("row")
+
+    def season_pitching_stats(
+        self,
+        player_id: str,
+        season: str,
+        game_type: str = "R",
+        pro: bool = True,
+        ) -> dict:
+        """Retrieve a players pitching stats for a given season.
+        https://appac.github.io/mlb-data-api-docs/#stats-data-season-pitching-stats-get
+        """
+        params = {}
+        params["player_id"] = player_id
+        params["game_type"] = f"'{game_type}'"
+        params["season"] = season
+        if pro is True:
+            params["league_list_id"] = "'mlb'"
+        else:
+            params["league_list_id"] = "'milb'"
+            print("Need to verify if sport_code='milb' is correct parameter for minor leagues")
+
+        encoded_params = urlencode(params, quote_via=quote_plus)
+        endpoint = f"/json/named.sport_hitting_tm.bam?{encoded_params}"
+        r = requests.get(self._host + endpoint)
+        return r.json()["sport_hitting_tm"]["queryResults"].get("row")
+
+
+class TeamData:
+    """Endpoints for getting team data. This data typically encompasses stadium information,
+    contact details, and other team specific information.
+    https://appac.github.io/mlb-data-api-docs/#team-data
+    """
+    def __init__(self, host):
+        self._host = host
+
+    def get_teams_by_season(
+        self,
+        season: str,
+        allstar: bool = False
+        ) -> dict:
+        """Retrieve a list of major league teams that were active during a given season.
+        https://appac.github.io/mlb-data-api-docs/#team-data-list-teams-get
+        """
+        params = {}
+        params["season"] = f"'{season}'"
+        if allstar:
+            params["all_star_sw"] = "'Y'"
+        else:
+            params["all_star_sw"] = "'N'"
+        encoded_params = urlencode(params, quote_via=quote_plus)
+        endpoint = f"/json/named.team_all_season.bam?sport_code='mlb'&{encoded_params}"
+        r = requests.get(self._host + endpoint)
+        return r.json()["team_all_season"]["queryResults"]["row"]
+
+    def get_40_man_roster(
+        self,
+        team_id: str,
+        ) -> dict:
+        """Retrieve a team's 40 man roster.
+        https://appac.github.io/mlb-data-api-docs/#team-data-40-man-roster-get
+        """
+        endpoint = f"/json/named.roster_40.bam?team_id={team_id}"
+        r = requests.get(self._host + endpoint)
+        return r.json()["roster_40"]["queryResults"]["row"]
