@@ -2,16 +2,18 @@ import requests
 from urllib.parse import urlencode, quote_plus
 
 
-class PlayerData:
+class Baseball:
+    def __init__(self):
+        self._host = "http://lookup-service-prod.mlb.com"
+
+
+class PlayerData(Baseball):
     """Endpoints for getting general player data.
     This data typically includes important dates for the player (birth, pro debut),
     some basic attributes like throwing/batting arm, height,
     weight as well as country of birth and college/schools attended.
     https://appac.github.io/mlb-data-api-docs/#player-data
     """
-    def __init__(self, host):
-        self._host = host
-
     def search_for_players(self, search_name, pro=True, active=True) -> list:
         """https://appac.github.io/mlb-data-api-docs/#player-data-player-search
         search_name (str): First and/or Last name of the player you are searchign for.
@@ -65,14 +67,11 @@ class PlayerData:
         return r.json()["player_info"]["queryResults"]["row"]
 
 
-class StatsData:
+class StatsData(Baseball):
     """Endpoints for getting player stats. This data typically encompasses
     pitching/batting stats per season, league, game type and also projected stats.
     https://appac.github.io/mlb-data-api-docs/#stats-data
     """
-    def __init__(self, host):
-        self._host = host
-
     def season_hitting_stats(
         self,
         player_id: str,
@@ -124,14 +123,11 @@ class StatsData:
         return r.json()["sport_hitting_tm"]["queryResults"].get("row")
 
 
-class TeamData:
+class TeamData(Baseball):
     """Endpoints for getting team data. This data typically encompasses stadium information,
     contact details, and other team specific information.
     https://appac.github.io/mlb-data-api-docs/#team-data
     """
-    def __init__(self, host):
-        self._host = host
-
     def get_teams_by_season(
         self,
         season: str,
