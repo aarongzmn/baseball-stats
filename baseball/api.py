@@ -38,6 +38,7 @@ class PlayerData(Baseball):
         encoded_params = urlencode(params, quote_via=quote_plus)
         endpoint = f"/json/named.search_player_all.bam?{encoded_params}"
         r = requests.get(self._host + endpoint)
+        return r.json()
         search_results = r.json()["search_player_all"]["queryResults"]["row"]
         result_type = type(search_results)
         if result_type == list:
